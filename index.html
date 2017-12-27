@@ -1,0 +1,223 @@
+<html>
+	<head >
+        <!--SEO/browser meta tags-->
+        <title>TagFics</title>
+
+        <meta name="og:title" content="TagFics">
+        <meta name="og:description" content="Automatically generate tag lists from Google Spreadsheets to use on Tumblr.">
+        <meta charset="utf-8">
+        <meta name="description" content="Automatically generate tag lists from Google Spreadsheets to use on Tumblr.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!--End SEO/browser meta tags-->
+
+        <!--Twitter Tags-->
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:title" content="TagFics">
+        <meta name="twitter:description" content="Automatically generate tag lists from Google Spreadsheets to use on Tumblr.">
+        <!--End Twitter Tags-->
+
+        <!--Stylesheets-->
+        <link rel="stylesheet" href="css/bootstrap.min.css"> <!--Bootstrap-->
+        <link rel="stylesheet" href="css/font-awesome.min.css"></li> <!--Font Awesome (for the icons)-->
+        <link rel="stylesheet" href="css/main.css"> <!--Our custom stylesheet-->
+        <!--End Stylesheets-->
+    </head>
+    <body>
+    	<!--[if lte IE 8]>
+            <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+
+        <div id="app" class="container" v-cloak>
+            <div class="row">
+                <div class="col-xs-12">
+                    <h1>TagFics <small>tumblr tag lists made easy.</small></h1>
+                </div>
+            </div>
+            <!--Sharing-->
+            <div class="row">
+                <div class="col-xs-12">
+                    <ul class="list-inline list-unstyled">
+                        <li> <!--Bookmark-->
+                            <a class="btn btn-default bookmark-btn" v-on:click="bookmark">
+                                <i class="fa fa-star"></i>&nbsp;&nbsp;Bookmark
+                            </a>
+                        </li>
+                        <li>
+                            <a class="btn btn-default tumblr-btn" v-on:click="tumblr_post">
+                                <i class="fa fa-tumblr"></i>&nbsp;&nbsp;Post to tumblr
+                            </a>
+                        </li>
+                        <li>
+                            <a class="btn btn-default github-btn" href="https://github.com/interactivefics/tag-fics" target="_blank">
+                                <i class="fa fa-github"></i>&nbsp;&nbsp;Fork on GitHub
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <!--End Sharing-->
+            <!--Form-->
+        	<div class="row">
+        		<div class="col-xs-12 input-form">
+        			<form id="api-form" class="form" v-on:submit="submit_form">
+                        <h3><b>Steps:</b></h3>
+        				<p>1. Have a <b>Google Spreadsheet with the usernames</b> you want to tag. <a href="https://support.google.com/docs/answer/2917686?hl=en" target="_blank"><b>[using a Google Form?]</b></a></p>
+                        <p>2. Don't forget to make sure the Google Spreasheet has a link that <b>allows anyone with the link to view it</b>, at least. <a href="https://support.google.com/docs/answer/2494822?hl=en&ref_topic=4671185" target="_blank"><b>[how?]</b></a></p> <!--Form prompt (enter x and y)-->
+                        <div class="form-group">
+					    	<label for="spreadsheet">3. Link to the Spreasheet:</label>
+					    	<input type="url" class="form-control" name="spreadsheet" id="spreadsheet" v-bind:placeholder="spreadsheet_placeholder" v-model:value="spreadsheet" required>
+					  	</div>
+                        <div class="form-group">
+                            <label for="range">4. Name of the Sheet: <a href="img/range_example.png" target="_blank">[where?]</a></label>
+                            <input type="text" class="form-control" name="range" id="range" v-bind:placeholder="range_placeholder" v-model:value="range" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="column">5. Column where the usernames are:</label>
+                            <select class="form-control" name="column" id="column" v-model:value="column_val" required>
+                                <option value="0">A</option>
+                                <option value="1">B</option>
+                                <option value="2">C</option>
+                                <option value="3">D</option>
+                                <option value="4">E</option>
+                                <option value="5">F</option>
+                                <option value="6">G</option>
+                                <option value="7">H</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <b>6. The username column has a title.</b> <input type="checkbox" name="hasTitle" v-model="hasTitle" checked> 
+                        </div>
+                        <!--End Date of Birth-->
+                        <!--Submit button-->
+                        <div class="form-group">
+                            <input type="submit" class="form-control" value="Generate">
+                        </div>
+                        <!--End Submit-->
+        			</form>
+        		</div>
+        	</div>
+            <!--End Form-->
+            <div class="row" v-show="loading">
+                <div class="col-xs-12 text-center">
+                    <span class="sr-only">Loading...</span>
+                    <i class="fa fa-spinner fa-pulse fa-3x fa-fw loading"></i>
+                </div>
+            </div>
+            <div class="row" v-show="hasResults">
+                <div class="col-md-8 col-xs-12 col-centered">
+                    <p class="text-center"><img v-bind:src="success"></p>
+                    <b>Perfect! Now, copy the HTML below and paste it in your tumblr post in HTML mode: <a href="img/html.png" target="_blank">[how?]</a></b>
+                    <textarea class="form-control" rows="5">{{ html_result }}</textarea>
+                </div>
+            </div>
+            <!--FAQ-->
+            <div class="row lists" v-show="hasFAQ">
+                <div class="col-xs-12 col-md-6 col-centered">
+                    <h3>FAQ</h3>
+                    <ul>
+                        <li v-for="(faq, index) in faqs" v-bind:title="faq_title(faq.expanded)">
+                            <p class="question" v-on:click="toggle_answer" v-bind:data-index="index">
+                                <strong>{{ faq.q }}</strong>
+                                <br>
+                                <span v-show="faq.expanded">{{ faq.a }}</span>
+                            </p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <!--End FAQ-->
+            <!--Footer-->
+            <div class="row">
+                <div class="col-xs-12 text-center">
+                    <ul class="list-unstyled list-inline">
+                        <li><a href="https://interactivefics.tumblr.com" target="_blank">Questions?</a></li>
+                        - 
+                        <li><a v-on:click="privacy_show">Privacy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <!--End Footer-->
+            <!--Error Modal (when a date is wrong for example)-->
+            <div id="error-modal" class="modal fade" role="dialog">
+              <div class="modal-dialog">
+                <!-- Modal Content-->
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Error</h4>
+                  </div>
+                  <div class="modal-body">
+                    <p>{{ error }}</p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                  </div>
+                </div>
+                <!--End Modal Content-->
+              </div>
+            </div>
+            <!--End Error Modal-->
+            <!--Bookmark Message Modal-->
+            <div id="bookmark-modal" class="modal fade" role="dialog">
+              <div class="modal-dialog">
+                <!-- Modal Content-->
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Bookmark</h4>
+                  </div>
+                  <div class="modal-body">
+                    <p>{{ bookmark_message }}</p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                  </div>
+                </div>
+                <!--End Modal Content-->
+              </div>
+            </div>
+            <!--End Bookmark Message Modal-->
+             <!--Privacy Policy Modal-->
+            <div id="privacy-modal" class="modal fade" role="dialog">
+              <div class="modal-dialog">
+                <!-- Modal Content-->
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Privacy</h4>
+                  </div>
+                  <div class="modal-body">
+                    <p>No data you enter here concerning your sheet or the content of it is recorded in any way. All this does is interact with Google Sheets and format the result, all in your browser.
+                    <br>
+                    That being said, page views/analytics are tracked by Google Analytics.</p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                  </div>
+                </div>
+                <!--End Modal Content-->
+              </div>
+            </div>
+            <!--End Privacy Modal-->
+        </div>
+
+        <!--Scripts-->
+        <script id="tumblr-js" async src="https://assets.tumblr.com/share-button.js"></script>
+        <script src="js/vue.min.js"></script> <!--Vue.js-->
+        <script src="js/jquery-3.2.1.min.js"></script> <!--jQuery-->
+        <script src="js/bookmark.js"></script> <!--Where the bookmarking logic is-->
+        <script src="js/logic.js"></script> <!--Where the Vue app logic is-->
+        <script src="js/bootstrap.min.js"></script> <!--Bootstrap-->
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-13306630-13"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'UA-13306630-13');
+        </script>
+
+        <!--End Scripts-->
+    </body>
+</html>
