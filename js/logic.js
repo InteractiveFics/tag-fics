@@ -1,7 +1,7 @@
 var API_KEY = 'AIzaSyDdDLNkCHEB5QaHxykT7GvmlDxpCjjcytk';
 
 var app = new Vue({ // Initialize Vue application
-	el: '#app', // Bind app to div with id="app"
+	el: '#app', // Bind app to div with id='app'
 	data: { // Once-loaded app data
 		api_error: null,
 		error: null,
@@ -26,10 +26,14 @@ var app = new Vue({ // Initialize Vue application
 		hasFAQ: function () { return this.faqs !== null && this.faqs.length > 0; },
 		success: function () {
 			var rand = Math.floor((Math.random() * this.success_gifs)) + 1;
-			return "img/success_" + rand + ".gif";
+			return 'img/success_' + rand + '.gif';
 		}
 	},
 	methods: { // Functions that can be used throughout the app
+		raise_error: function (message) {
+			this.error = message;
+			$('#error-modal').modal('show');
+		},
 		spreadsheet_id: function () {
 			if (this.spreadsheet !== null) {
 				var split_url = this.spreadsheet.split('/');
@@ -53,10 +57,13 @@ var app = new Vue({ // Initialize Vue application
 			});
 		},
 		tumblr_post: function (event) {
-			var url = 'http://tumblr.com/widgets/share/tool?canonicalUrl=' + encodeURIComponent(getDomain()) + '&title=TagFics&content=Automatically%20generate%20tag%20lists%20from%20Google%20Spreadsheets%20to%20use%20on%20Tumblr.' ;
-			var share_window = window.open(url, 'Post to tumblr', 'height=800,width=800');
-			if (window.focus) share_window.focus();
-			return false;
+			var url = 'http://tumblr.com/widgets/share/tool?canonicalUrl='
+					  + encodeURIComponent(getDomain())
+					  + '&title=TagFics&content='
+					  + encodeURIComponent('Automatically generate tag '
+					  						+'lists from Google Spreadsheets '
+					  						+'to use on Tumblr');
+			return openPopup(url);
 		},
 		toggle_answer: function (event) { // Show/hide answer when question is clicked on
 			var question = event.currentTarget.dataset.index;
@@ -81,33 +88,43 @@ var app = new Vue({ // Initialize Vue application
 					success: function (data) {
 						self.loading = false;
 						if (self.column > data.values.length - 1) {
-							self.raise_error('Specified column in the spreadsheet does not have any data.'); 
+							self.raise_error('Specified column in the spreadsheet'
+											+' does not have any data.'); 
 						} else {
 							var usernames = data.values[self.column];
 							if (self.hasTitle) { usernames.shift(); };
 							self.html_result = usernames.map(cleanUsername).map(tagUsername).join(' ');
 						} 
 					},
-					error: function (error) {
+					error: function (response) {
 						self.loading = false;
-						var code = error.responseJSON.error.code;
-						if (code == 404) { self.raise_error("No sheet found with this ID: " + self.spreadsheet_id); }
-						else if (code == 403) { self.raise_error("No permission to access this sheet. Make sure the sheet is public/viewable for anyone with the link."); }
-						else {
-							var message = error.responseJSON.error.message;
-							if (message.indexOf("range") !== -1) {
-								self.raise_error("The spreadsheet name you entered (" + self.range + ") is incorrect. Please check your spelling/capitalization/any extra spaces.");
-							} else {
-								self.raise_error(message);
-							}
+						var error = response.responseJSON.error;
+						var code = error.code;
+						switch (code) {
+							case 404:
+								self.raise_error('No sheet found with this ID: '
+												+ self.spreadsheet_id());
+								break;
+							case 403:
+								self.raise_error('No permission to access this sheet. '
+												+'Make sure the sheet is public/viewable '
+												+'for anyone with the link.');
+								break;
+							default:
+								var message = error.message;
+								if (message.indexOf('range') !== -1) {
+									self.raise_error('The spreadsheet name you entered ('
+													 + self.range
+													 + ') is incorrect.'
+													 +' Please check your spelling/capitalization'
+													 +'/any extra spaces.');
+								} else {
+									self.raise_error(message);
+								}
 						}
 					}
 				});
 			}
-		},
-		raise_error: function (message) {
-			this.error = message;
-			$('#error-modal').modal('show');
 		}
 	}
 });
@@ -119,17 +136,17 @@ function getDomain() {
 
 function getParameterByName(name, url) { // Get query parameter value by its name
     if (!url) url = window.location.href;
-    name = name.replace(/[\[\]]/g, "\\$&");
-    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+    name = name.replace(/[\[\]]/g, '\\$&');
+    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
         results = regex.exec(url);
     if (!results) return null;
     if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, " "));
+    return decodeURIComponent(results[2].replace(/\+/g, ' '));
 };
 
 function cleanUsername(username) {
 	var final = $.trim(username.toLowerCase());
-	if (final[0] === "@") { final = final.slice(1, final.length); }
+	if (final[0] === '@') { final = final.slice(1, final.length); }
 	if (final.endsWith('.tumblr.com')) { final = final.slice(0, -11); }
 	return final;
 };
@@ -137,3 +154,9 @@ function cleanUsername(username) {
 function tagUsername(username) {
 	return '<a class="tumblelog" spellcheck="false">@'+ username +'</a>';
 };
+
+function openPopup(url) {
+	var share_window = window.open(url, 'Post to tumblr', 'height=800,width=800');
+	if (window.focus) share_window.focus();
+	return false;
+}
