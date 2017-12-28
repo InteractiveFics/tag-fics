@@ -23,21 +23,22 @@ var app = new Vue({ // Initialize Vue application
 	computed: {
 		column: function () { return Number(this.column_val); },
 		hasResults: function () { return this.html_result !== null; },
+		hasFAQ: function () { return this.faqs !== null && this.faqs.length > 0; },
 		success: function () {
 			var rand = Math.floor((Math.random() * this.success_gifs)) + 1;
 			return "img/success_" + rand + ".gif";
-		},
-		hasFAQ: function () { return this.faqs !== null && this.faqs.length > 0; }
+		}
 	},
 	methods: { // Functions that can be used throughout the app
 		spreadsheet_id: function () {
 			if (this.spreadsheet !== null) {
 				var split_url = this.spreadsheet.split('/');
-				if (split_url.length < 6 || split_url[2].toLowerCase() !== 'docs.google.com' || split_url[3].toLowerCase() !== 'spreadsheets' || split_url[4].toLowerCase() !== 'd') {
+				if (split_url.length < 6
+					|| split_url[2].toLowerCase() !== 'docs.google.com'
+					|| split_url[3].toLowerCase() !== 'spreadsheets'
+					|| split_url[4].toLowerCase() !== 'd') {
 					this.raise_error('Please enter a valid Google Spreadsheet URL.');
-				} else{
-					return this.spreadsheet.split('/')[5];
-				}
+				} else { return this.spreadsheet.split('/')[5]; }
 			}
 			return null;
 		},
@@ -53,8 +54,7 @@ var app = new Vue({ // Initialize Vue application
 		},
 		tumblr_post: function (event) {
 			var url = 'http://tumblr.com/widgets/share/tool?canonicalUrl=' + encodeURIComponent(getDomain()) + '&title=TagFics&content=Automatically%20generate%20tag%20lists%20from%20Google%20Spreadsheets%20to%20use%20on%20Tumblr.' ;
-			console.log(url);
-			var share_window = window.open(url, 'Post to tumblr', 'height=1000,width=1000');
+			var share_window = window.open(url, 'Post to tumblr', 'height=800,width=800');
 			if (window.focus) share_window.focus();
 			return false;
 		},
@@ -80,12 +80,12 @@ var app = new Vue({ // Initialize Vue application
 					data: { key: API_KEY, majorDimension: 'COLUMNS'},
 					success: function (data) {
 						self.loading = false;
-						if (self.column > data.values.length - 1) { self.raise_error('Specified column in the spreadsheet does not have any data.'); }
-						else {
+						if (self.column > data.values.length - 1) {
+							self.raise_error('Specified column in the spreadsheet does not have any data.'); 
+						} else {
 							var usernames = data.values[self.column];
 							if (self.hasTitle) { usernames.shift(); };
 							self.html_result = usernames.map(cleanUsername).map(tagUsername).join(' ');
-							console.log('Done');
 						} 
 					},
 					error: function (error) {
@@ -93,7 +93,7 @@ var app = new Vue({ // Initialize Vue application
 						var code = error.responseJSON.error.code;
 						if (code == 404) { self.raise_error("No sheet found with this ID: " + self.spreadsheet_id); }
 						else if (code == 403) { self.raise_error("No permission to access this sheet. Make sure the sheet is public/viewable for anyone with the link."); }
-						else{
+						else {
 							var message = error.responseJSON.error.message;
 							if (message.indexOf("range") !== -1) {
 								self.raise_error("The spreadsheet name you entered (" + self.range + ") is incorrect. Please check your spelling/capitalization/any extra spaces.");
@@ -104,7 +104,6 @@ var app = new Vue({ // Initialize Vue application
 					}
 				});
 			}
-
 		},
 		raise_error: function (message) {
 			this.error = message;
@@ -113,39 +112,10 @@ var app = new Vue({ // Initialize Vue application
 	}
 });
 
-$(function(){ // Function that runs when the document is ready
-/*
-	try { // Get remaining expectancy if birthdate is valid
-		$.ajax({
-			url: BASE_URL + '/life-expectancy/remaining/' 
-				+ app.sex 
-				+ '/' + encodeURIComponent(app.country) 
-				+ '/' + date.year + '-' + (date.month + 1) + '-' + date.day 
-				+ '/' + getAge(app.year, app.month, app.day),
-			method: 'GET',
-			dataType: 'json',
-			success: function (data) {
-				app.remaining = data.remaining_life_expectancy;
-				window.setInterval(function () {
-					app.remaining -= 50 * millisecond_in_years;
-				}, 50);
-			},
-			error: function (error) {
-				app.api_error = 'No data found for these parameters.'
-			}
-		});
-	} catch (err) {
-		app.error = err;
-		Vue.nextTick(function () {
-			$('#error-modal').modal('show');
-		});
-	}*/
-});
-
 function getDomain() {
 	var full_url = document.location.href;
 	return full_url.split('?')[0];
-}
+};
 
 function getParameterByName(name, url) { // Get query parameter value by its name
     if (!url) url = window.location.href;
