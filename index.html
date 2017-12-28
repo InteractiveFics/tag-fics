@@ -9,13 +9,6 @@
         <meta charset="utf-8">
         <meta name="description" content="Automatically generate tag lists from Google Spreadsheets to use on Tumblr.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-	<!-- Google Tag Manager -->
-	<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-	new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-	j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-	'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-	})(window,document,'script','dataLayer','GTM-TMD86NP');</script>
-	<!-- End Google Tag Manager -->
         <!--End SEO/browser meta tags-->
 
         <!--Twitter Tags-->
@@ -34,10 +27,6 @@
     	<!--[if lte IE 8]>
             <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
-	    <!-- Google Tag Manager (noscript) -->
-		<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TMD86NP"
-		height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-	     <!-- End Google Tag Manager (noscript) -->
 
         <div id="app" class="container" v-cloak>
             <div class="row">
@@ -73,8 +62,8 @@
         		<div class="col-xs-12 input-form">
         			<form id="api-form" class="form" v-on:submit="submit_form">
                         <h3><b>Steps:</b></h3>
-        				<p>1. Have a <b>Google Spreadsheet with the usernames</b> you want to tag. <a href="https://support.google.com/docs/answer/2917686?hl=en" target="_blank"><b>[using a Google Form?]</b></a></p>
-                        <p>2. Don't forget to make sure the Google Spreadsheet has a link that <b>allows anyone with the link to view it</b>, at least. <a href="https://support.google.com/docs/answer/2494822?hl=en&ref_topic=4671185" target="_blank"><b>[how?]</b></a></p> <!--Form prompt (enter x and y)-->
+        			        <p>1. Have a <b>Google Spreadsheet with the usernames</b> you want to tag. <a href="https://support.google.com/docs/answer/2917686?hl=en" target="_blank"><b>[using a Google Form?]</b></a></p>
+                        	<p>2. Don't forget to make sure the Google Spreadsheet has a link that <b>allows anyone with the link to view it</b>, at least. <a href="https://support.google.com/docs/answer/2494822?hl=en&ref_topic=4671185" target="_blank"><b>[how?]</b></a></p> <!--Form prompt (enter x and y)-->
                         <div class="form-group">
 					    	<label for="spreadsheet">3. Link to the Spreadsheet:</label>
 					    	<input type="url" class="form-control" name="spreadsheet" id="spreadsheet" v-bind:placeholder="spreadsheet_placeholder" v-model:value="spreadsheet" required>
@@ -226,10 +215,8 @@
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-
           gtag('config', 'UA-13306630-13');
         </script>
-
         <!--End Scripts-->
     </body>
 </html>
