@@ -17,7 +17,8 @@ var app = new Vue({ // Initialize Vue application
 		hasTitle: true,
 		html_result: null,
 		loading: false,
-		success_gifs: 6
+		success_gifs: 6,
+		possible_cols: generatePossibleCols(20)
 	},
 	watch: {},
 	computed: {
@@ -159,4 +160,8 @@ function openPopup(url) {
 	var share_window = window.open(url, 'Post to tumblr', 'height=800,width=800');
 	if (window.focus) share_window.focus();
 	return false;
+}
+
+function generatePossibleCols(number) {
+	return 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.slice(0, number).split('');
 }
